@@ -1,87 +1,137 @@
-# Assignment 1 — Builder Pattern: Custom Pizza Ordering System
+# Pizza Factory Patterns
 
-## Domain Description
-This project implements the **Builder Creational Pattern** in Java for a **Pizza Ordering System**.
-A pizza order is a complex object consisting of multiple configurable parameters (size, dough type, sauce, extra crust, toppings). The Builder pattern allows constructing pizza objects step-by-step using a **Fluent API**, validating business logic before object creation, and reusing standard pizza recipes using a **Director**.
+This Java console application demonstrates Factory Method and
+Abstract Factory using a pizza restaurant.
 
----
+## How to Run
 
-## Technical Architecture
-- **Product (`PizzaOrder`):** Represents the final immutable pizza object.
-- **Builder (`PizzaBuilder`):** Provides granular step-by-step configuration methods with method chaining (`return this;`).
-- **Director (`Director`):** Encapsulates creation of standard configurations (`Pepperoni`, `Four Cheese`).
-- **Client (`Main`):** Demonstrates custom pizza construction, director usage, and error validation handling.
+Open the project in IntelliJ IDEA, select an installed JDK,
+and run the main method in src/pizza/app/Main.java.
 
----
+No external libraries are required.
 
-## Clean Code Principles Justification
+## Part A — Factory Method
 
-### 1. Meaningful, Intention-Revealing Names
-- **Description:** Classes, variables, and methods are named clearly based on domain concepts without cryptic abbreviations.
-- **Code Excerpt:**
-  ```java
-  // BEFORE (bad):
-  public PizzaBuilder setD(DoughType d) { this.d = d; return this; }
+PizzaRestaurant declares the factory method createPizza().
+Its orderPizza() method uses the returned pizza through the
+Pizza interface.
 
-  // AFTER (applied):
-  public PizzaBuilder setDoughType(DoughType doughType) {
-      this.doughType = doughType;
-      return this;
-  }
-2. Small Methods with Single Responsibility (Do One Thing)
+Restaurant subclasses override createPizza() to choose the
+concrete pizza.
 
+| Role | Interface or Class |
+|---|---|
+| Product | Pizza |
+| Concrete Products | Pepperoni, Fourseas |
+| Creator | PizzaRestaurant |
+| Concrete Creators | PepperoniRestaurant, FourseasRestaurant |
 
-// BEFORE (bad - build method does construction AND complex validation logic together):
+The current Fourseas class represents the Four Cheese recipe.
 
-public PizzaOrder build() {
-if (size == null) throw new IllegalStateException();
-if (toppings.isEmpty()) throw new IllegalStateException();
-return new PizzaOrder(...);
+The shared ordering process does not need to change when
+another restaurant subclass supplies a new pizza type.
+
+## Part B — Abstract Factory
+
+PizzaMealFactory declares methods for creating two related
+product types: Pizza and Drink.
+
+Each concrete factory creates a predefined meal family.
+
+| Factory | Pizza | Drink |
+|---|---|---|
+| PepperoniMealFactory | Pepperoni | Cola |
+| FourCheeseMealFactory | Fourseas | Lemonade |
+
+| Role | Interface or Class |
+|---|---|
+| Abstract Factory | PizzaMealFactory |
+| Concrete Factories | PepperoniMealFactory, FourCheeseMealFactory |
+| Abstract Products | Pizza, Drink |
+| Concrete Products | Pepperoni, Fourseas, Cola, Lemonade |
+| Client | MealOrder |
+
+MealOrder uses factory and product interfaces.
+Main selects the concrete factories during application setup.
+
+## Clean Code Principles
+
+### 1. Meaningful Names
+
+```java
+Pizza createPizza();
+Drink createDrink();
+```
+
+These method names describe exactly which products they create.
+They communicate more clearly than names such as make() or get().
+
+### 2. Small Methods
+
+```java
+@Override
+public Drink createDrink() {
+    return new Cola();
 }
+```
 
-// AFTER (applied - separate validation helper method):
+This method performs one task: creating a drink.
+It does not also serve the meal or print order information.
 
-public PizzaOrder build() {
-validateOrderState();
-return new PizzaOrder(size, doughType, sauceType, extraCheese, extraCrust, new ArrayList<>(toppings));
+### 3. Avoid Duplicated Logic
+
+```java
+public void orderPizza() {
+    Pizza pizza = createPizza();
+
+    System.out.println("Order received: " + pizza.getName());
+    pizza.prepare();
+    System.out.println("Your pizza is ready.");
 }
-3. Validated Construction (Throw Clear Exceptions)
+```
 
+The ordering process is defined once in PizzaRestaurant.
+Both restaurant subclasses inherit it instead of copying it.
 
-private void validateOrderState() {
-if (size == null) {
-throw new IllegalStateException("Pizza size must be explicitly specified.");
+### 4. Clear Validation and Error Messages
+
+```java
+if (factory == null) {
+    throw new IllegalArgumentException(
+            "Meal factory must not be null."
+    );
 }
-if (toppings.isEmpty()) {
-throw new IllegalStateException("Pizza must contain at least one topping.");
-}
-}
+```
 
+The MealOrder constructor rejects an invalid factory argument
+before attempting to use it. The message explains the problem.
 
-4. No Magic Strings/Numbers (Using Enums & Strongly Typed Parameters)
+### 5. Encapsulation
 
+```java
+private final Pizza pizza;
+private final Drink drink;
+```
 
-// BEFORE (bad):
+MealOrder keeps its product references private, so other classes
+cannot directly replace them. The final modifier prevents these
+references from being reassigned after initialization.
 
-builder.setSize(2); // What does 2 mean? Large? Medium?
-builder.setDough("thin_crust_v2");
+This protects the selected meal composition. It does not, by
+itself, make the product objects immutable.
 
-// AFTER (applied):
+## Manual Verification
 
-builder.setSize(Size.LARGE);
-builder.setDoughType(DoughType.THIN);
+Running Main demonstrated:
 
+- Pepperoni creation through Factory Method.
+- Four Cheese creation through Factory Method.
+- A Pepperoni and Cola meal through Abstract Factory.
+- A Four Cheese and Lemonade meal through Abstract Factory.
+- Normal program completion with exit code 0.
 
-5. Argument Discipline (Minimal Function Arguments & Fluent Method Chaining)
+## Limitations
 
-
-// BEFORE (bad - long parameter list with flag arguments):
-
-public PizzaOrder createPizza(Size s, DoughType d, SauceType sauce, boolean extraCheese, boolean extraCrust, List<String> t)
-
-// AFTER (applied - fluent API with single-argument setter methods):
-
-public PizzaBuilder setExtraCheese(boolean extraCheese) {
-this.extraCheese = extraCheese;
-return this;
-}
+This is a console demonstration. Preparation and serving are
+represented by printed messages. The application does not
+implement payments, inventory, or delivery.
