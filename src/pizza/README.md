@@ -1,22 +1,22 @@
-# Pizza Factory Patterns
+# Pizza Factory and Bridge Patterns
 
-This Java console application demonstrates Factory Method and
-Abstract Factory using a pizza restaurant.
+This Java console application demonstrates Factory Method,
+Abstract Factory, and Bridge patterns using a pizza restaurant domain.
 
 ## How to Run
 
 Open the project in IntelliJ IDEA, select an installed JDK,
-and run the main method in src/pizza/app/Main.java.
+and run the main method in `src/pizza/app/Main.java`.
 
 No external libraries are required.
 
 ## Part A — Factory Method
 
-PizzaRestaurant declares the factory method createPizza().
-Its orderPizza() method uses the returned pizza through the
-Pizza interface.
+`PizzaRestaurant` declares the factory method `createPizza()`.
+Its `orderPizza()` method uses the returned pizza through the
+`Pizza` interface.
 
-Restaurant subclasses override createPizza() to choose the
+Restaurant subclasses override `createPizza()` to choose the
 concrete pizza.
 
 | Role | Interface or Class |
@@ -26,15 +26,15 @@ concrete pizza.
 | Creator | PizzaRestaurant |
 | Concrete Creators | PepperoniRestaurant, FourseasRestaurant |
 
-The current Fourseas class represents the Four Cheese recipe.
+The current `Fourseas` class represents the Four Cheese recipe.
 
 The shared ordering process does not need to change when
 another restaurant subclass supplies a new pizza type.
 
 ## Part B — Abstract Factory
 
-PizzaMealFactory declares methods for creating two related
-product types: Pizza and Drink.
+`PizzaMealFactory` declares methods for creating two related
+product types: `Pizza` and `Drink`.
 
 Each concrete factory creates a predefined meal family.
 
@@ -51,87 +51,77 @@ Each concrete factory creates a predefined meal family.
 | Concrete Products | Pepperoni, Fourseas, Cola, Lemonade |
 | Client | MealOrder |
 
-MealOrder uses factory and product interfaces.
-Main selects the concrete factories during application setup.
+`MealOrder` uses factory and product interfaces.
+`Main` selects the concrete factories during application setup.
+
+## Part C — Bridge Pattern
+
+Assignment 3 adds a new independent dimension to the pizza application:
+the order type is separated from the way the order is fulfilled.
+
+| Bridge Role | Class |
+|---|---|
+| Abstraction | Order |
+| Refined Abstractions | PersonalOrder, FamilyOrder |
+| Implementor | Fulfillment |
+| Concrete Implementors | DeliveryFulfillment, DineInFulfillment |
+| Client | Main |
+
+The `Order` abstraction stores a reference to the `Fulfillment`
+interface. This composition is the bridge between the two hierarchies.
+
+`Main` also demonstrates runtime switching by creating a
+`PersonalOrder` with delivery and then changing the same abstraction
+to dine-in without changing the `PersonalOrder` class.
 
 ## Clean Code Principles
 
 ### 1. Meaningful Names
 
-```java
-Pizza createPizza();
-Drink createDrink();
-```
+Names such as `PersonalOrder`, `DeliveryFulfillment`, and
+`changeFulfillment()` describe their intent directly.
 
-These method names describe exactly which products they create.
-They communicate more clearly than names such as make() or get().
+### 2. Small, Focused Classes
 
-### 2. Small Methods
+Every Bridge class has one main responsibility:
+order classes contain high-level order behavior, while fulfillment
+classes contain low-level fulfillment behavior.
 
-```java
-@Override
-public Drink createDrink() {
-    return new Cola();
-}
-```
+### 3. Clear Separation of Responsibilities
 
-This method performs one task: creating a drink.
-It does not also serve the meal or print order information.
+The abstraction side does not contain courier or restaurant-serving
+details. Those details stay inside concrete implementors.
 
-### 3. Avoid Duplicated Logic
+### 4. Program to an Interface
 
-```java
-public void orderPizza() {
-    Pizza pizza = createPizza();
+`Order` depends on the `Fulfillment` interface rather than on
+`DeliveryFulfillment` or `DineInFulfillment`.
 
-    System.out.println("Order received: " + pizza.getName());
-    pizza.prepare();
-    System.out.println("Your pizza is ready.");
-}
-```
+### 5. Open/Closed Design
 
-The ordering process is defined once in PizzaRestaurant.
-Both restaurant subclasses inherit it instead of copying it.
+A new fulfillment method can implement `Fulfillment` without changing
+`Order`, `PersonalOrder`, or `FamilyOrder`.
 
-### 4. Clear Validation and Error Messages
+### 6. Defensive Validation
 
-```java
-if (factory == null) {
-    throw new IllegalArgumentException(
-            "Meal factory must not be null."
-    );
-}
-```
-
-The MealOrder constructor rejects an invalid factory argument
-before attempting to use it. The message explains the problem.
-
-### 5. Encapsulation
-
-```java
-private final Pizza pizza;
-private final Drink drink;
-```
-
-MealOrder keeps its product references private, so other classes
-cannot directly replace them. The final modifier prevents these
-references from being reassigned after initialization.
-
-This protects the selected meal composition. It does not, by
-itself, make the product objects immutable.
+`Order` rejects a null fulfillment with a clear exception message,
+preventing an invalid Bridge configuration.
 
 ## Manual Verification
 
-Running Main demonstrated:
+Running `Main` demonstrates:
 
 - Pepperoni creation through Factory Method.
 - Four Cheese creation through Factory Method.
 - A Pepperoni and Cola meal through Abstract Factory.
 - A Four Cheese and Lemonade meal through Abstract Factory.
-- Normal program completion with exit code 0.
+- Personal order with delivery.
+- Runtime switch of the same personal order to dine-in.
+- Family order with delivery.
+- Normal program completion.
 
 ## Limitations
 
-This is a console demonstration. Preparation and serving are
-represented by printed messages. The application does not
-implement payments, inventory, or delivery.
+This is a console demonstration. Preparation, serving, and fulfillment
+are represented by printed messages. The application does not implement
+payments, inventory, real courier tracking, or restaurant table management.
