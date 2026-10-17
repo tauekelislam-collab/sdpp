@@ -1,5 +1,7 @@
 package pizza.app;
 
+import pizza.facade.PizzaOrderFacade;
+
 import pizza.abstractfactory.FourseasMealFactory;
 import pizza.abstractfactory.PepperoniMealFactory;
 import pizza.abstractfactory.PizzaMealFactory;
@@ -19,6 +21,31 @@ public class Main {
         demonstrateFactoryMethod();
         demonstrateAbstractFactory();
         demonstrateBridge();
+
+        System.out.println("\n=== Facade Pattern ===");
+        PizzaOrderFacade restaurant = new PizzaOrderFacade(5, 20000, true);
+        System.out.println(restaurant.placeOrder("pepperoni", 2));
+        System.out.println(restaurant.placeOrder("four cheese", 1));
+
+        try {
+            restaurant.placeOrder("pepperoni", 10);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
+
+        PizzaOrderFacade lowBalance = new PizzaOrderFacade(5, 1000, true);
+        try {
+            lowBalance.placeOrder("pepperoni", 1);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
+
+        PizzaOrderFacade closedKitchen = new PizzaOrderFacade(5, 20000, false);
+        try {
+            closedKitchen.placeOrder("pepperoni", 1);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private static void demonstrateFactoryMethod() {
