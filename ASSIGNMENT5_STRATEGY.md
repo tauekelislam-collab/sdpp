@@ -7,7 +7,7 @@ Topic: pizza delivery cost calculation. Distance is a non-negative whole number 
 | Strategy interface | DeliveryStrategy.calculateCost(int distanceKm) |
 | Concrete strategies | StandardDelivery, ExpressDelivery, PickupDelivery |
 | Context | DeliveryService stores the strategy and delegates calculation |
-| Client | pizza.strategy.Main selects and switches strategies on the same service at runtime |
+| Client | pizza.app.Main selects and switches strategies on the same service at runtime |
 
 Standard delivery: 500 + 100 * distance. Express: 1000 + 200 * distance. Pickup: 0.
 
@@ -21,14 +21,15 @@ Standard delivery: 500 + 100 * distance. Express: 1000 + 200 * distance. Pickup:
 
 ## Run
 
-Run pizza.strategy.Main in IntelliJ IDEA, or from the repository root:
+Run pizza.app.Main in IntelliJ IDEA, or from the repository root:
 
 ```sh
-javac -d out src/pizza/strategy/*.java
-java -cp out pizza.strategy.Main
+javac -d out -sourcepath src src/pizza/app/Main.java
+java -cp out pizza.app.Main
 ```
 
-Expected output:
+The Strategy section appears after the previous pattern demonstrations:
+
 
 ```text
 Standard: 1000 KZT

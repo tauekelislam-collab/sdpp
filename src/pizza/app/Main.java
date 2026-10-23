@@ -1,6 +1,10 @@
 package pizza.app;
 
 import pizza.facade.PizzaOrderFacade;
+import pizza.strategy.DeliveryService;
+import pizza.strategy.StandardDelivery;
+import pizza.strategy.ExpressDelivery;
+import pizza.strategy.PickupDelivery;
 
 import pizza.abstractfactory.FourseasMealFactory;
 import pizza.abstractfactory.PepperoniMealFactory;
@@ -46,6 +50,17 @@ public class Main {
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
+        System.out.println("\n=== Strategy Pattern: Pizza Delivery ===");
+        int distanceKm = 5;
+        DeliveryService delivery = new DeliveryService(new StandardDelivery());
+        System.out.println("Standard: " + delivery.calculateCost(distanceKm) + " KZT");
+
+        delivery.setStrategy(new ExpressDelivery());
+        System.out.println("Express: " + delivery.calculateCost(distanceKm) + " KZT");
+
+        delivery.setStrategy(new PickupDelivery());
+        System.out.println("Pickup: " + delivery.calculateCost(distanceKm) + " KZT");
+
     }
 
     private static void demonstrateFactoryMethod() {
