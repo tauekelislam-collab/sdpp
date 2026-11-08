@@ -1,6 +1,7 @@
 package pizza.app;
 
 import pizza.facade.PizzaOrderFacade;
+import pizza.visitor.VisitorDemo;
 import pizza.strategy.DeliveryService;
 import pizza.strategy.StandardDelivery;
 import pizza.strategy.ExpressDelivery;
@@ -60,6 +61,8 @@ public class Main {
 
         delivery.setStrategy(new PickupDelivery());
         System.out.println("Pickup: " + delivery.calculateCost(distanceKm) + " KZT");
+
+        VisitorDemo.run();
 
     }
 
